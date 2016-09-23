@@ -4,14 +4,14 @@ import {Http, Headers} from '@angular/http';
 @Injectable()
 export class HttpClient {
   //private IROADURL = "http://roadsafety.go.tz/demo/api/";
-  private IROADURL = "demo/api/";
+  private IROADURL = "http://192.168.42.149:8082/demo/api/";
+  //private IROADURL = "demo/api/";
   constructor(private http: Http) {
     this.http = http;
   }
 
   createAuthorizationHeader(headers:Headers) {
     headers.append('Authorization', 'Basic ' +
-      //btoa('community:COMMUNITY2015'));
       btoa('admin:IROAD2015'));
   }
 

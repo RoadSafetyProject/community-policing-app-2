@@ -1,36 +1,24 @@
 import { Component } from '@angular/core';
-import { NavController,MenuController } from 'ionic-angular';
-import {Map,LatLng,Marker}  from "leaflet";
-import { GoogleMap, GoogleMapsEvent,GoogleMapsLatLng } from 'ionic-native';
+import { HttpClient } from '../../services/httpclient';
+import {Events} from 'ionic-angular';
+import { GoogleMap, GoogleMapsEvent,GoogleMapsLatLng,GoogleMapsMarkerOptions,GoogleMapsMarker } from 'ionic-native';
 
 //declare let L: any;
 
 @Component({
-  templateUrl: 'build/pages/facilities/facilities.html'
+  templateUrl: 'build/pages/facilities/facilities.html',
+  providers: [HttpClient]
 })
 export class FacilitiesPage {
 
   map: GoogleMap;
-  constructor(public navCtrl: NavController,public menuCtrl: MenuController) {
+  constructor(private http:HttpClient,public events: Events) {
     /**/
   }
   ngAfterViewInit(){
-    console.log("Here");
-    //center.lat = 51.505;
-    //center.lng = -0.09;
-    /*var map = new Map('map');
-    map.setView(new LatLng(51.505,-0.09), 3);
+    let location = new GoogleMapsLatLng(-6.3690,34.8888);
 
-    var marker = new Marker(new LatLng(51.505,-0.09));
-    marker.addTo(map)*/
-
-    /*let map = new GoogleMap('map');
-
-    map.on(GoogleMapsEvent.MAP_READY).subscribe(()=> { console.log("other is ready" )});*/
-
-    let location = new GoogleMapsLatLng(-34.9290,138.6010);
-
-    this.map = new GoogleMap('map'/*, {
+    this.map = new GoogleMap('map', {
       'backgroundColor': 'white',
       'controls': {
         'compass': true,
@@ -46,22 +34,41 @@ export class FacilitiesPage {
       },
       'camera': {
         'latLng': location,
-        'tilt': 30,
-        'zoom': 5,
+        'zoom': 7,
         'bearing': 50
       }
-    }*/);
-
-    this.map.on(GoogleMapsEvent.MAP_READY).subscribe(() => {
-      console.log('Map is ready!');
     });
-    /*L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    this.map.on(GoogleMapsEvent.MAP_READY).subscribe(() => {
+      this.events.subscribe('menu:opened', () => {
+        // your action here
+        this.map.setClickable(false);
+      });
 
-    L.marker([51.5, -0.09]).addTo(map)
-      .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
-      .openPopup();*/
-    console.log("Here2");
+      this.events.subscribe('menu:closed', () => {
+        // your action here
+        this.map.setClickable(true);
+      });
+      this.http.get("organisationUnits.json?fields=*&filter=organisationUnitGroups.name:eq:Hospitals")
+        .subscribe(data => {
+          alert("Here1");
+          let organisationUnits = data.json().organisationUnits;
+          organisationUnits.forEach(organisationUnit =>{
+            if(organisationUnit.coordinates){
+              let coords = eval(organisationUnit.coordinates);
+              let markerOptions: GoogleMapsMarkerOptions = {
+                position: new GoogleMapsLatLng(coords[0],coords[1]),
+                title: organisationUnit.name
+              };
+              this.map.addMarker(markerOptions).then(
+                (marker: GoogleMapsMarker) => {
+                  marker.showInfoWindow();
+                })
+            }
+            alert("Here2");
+          },error => {
+            alert("ERROR:" + error);
+          })
+        });
+    });
   }
 }

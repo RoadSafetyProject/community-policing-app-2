@@ -12,7 +12,7 @@ export class ReportPage {
   public programStages:Array<any>;
   public program:String;
   public dataValues:any = {};
-  public base64Image:string;
+  public base64Image:any = {};
 
   constructor(private http:HttpClient,private loadingCtrl: LoadingController,public alertCtrl: AlertController) {
     //alert("Herer");
@@ -20,7 +20,6 @@ export class ReportPage {
       content: "Please wait..."
     });
     loader.present();
-    console.log("IROADLOG SENDING REQUEST");
     this.http.get("programs.json?fields=id,name,programStages[programStageDataElements[:all,dataElement[id,name,valueType]]]&filter=name:eq:Community%20Police")
       .subscribe(data => {
         //alert("SUCCESS");
@@ -29,6 +28,9 @@ export class ReportPage {
         this.initiateDataValues(programResults.programs[0].programStages[0].programStageDataElements);
         this.program = programResults.programs[0].id;
         this.programStages = programResults.programs[0].programStages[0].programStageDataElements;
+        /*this.programStages.forEach(function(programStage){
+          this.base64Image[programStage.dataElement.id]
+        })*/
         loader.destroy();
         //alert("SUCCESS FINISHED");
       },error =>{
@@ -44,33 +46,35 @@ export class ReportPage {
     })
   }
   private takeShot(dataElement){
+    alert("IROADLOG:");
     if(dataElement.name.indexOf('Image') > -1){
-      this.takePicture();
+      alert("IROADLOG:1");
+      this.takePicture(dataElement);
     }else{
-      this.takeVideo();
+      this.takeVideo(dataElement);
     }
   }
-  private takePicture() {
+  private takePicture(dataElement) {
+    alert("IROADLOG:2");
     Camera.getPicture({
       destinationType: Camera.DestinationType.DATA_URL,
-      targetWidth: 1000,
-      targetHeight: 1000
+      sourceType: Camera.PictureSourceType.CAMERA
     }).then((imageData) => {
+      alert("IROADLOG:SUCCESS");
       // imageData is a base64 encoded string
-      this.base64Image = "data:image/jpeg;base64," + imageData;
+      this.base64Image[dataElement.id] = "data:image/jpeg;base64," + imageData;
     }, (err) => {
+      alert("IROADLOG:ERR:" + err);
       console.log(err);
     });
   }
-  private takeVideo() {
+  private takeVideo(dataElement) {
     Camera.getPicture({
-      destinationType: Camera.DestinationType.DATA_URL,
-      mediaType:Camera.MediaType.VIDEO,
-      targetWidth: 1000,
-      targetHeight: 1000
+      mediaType: Camera.MediaType.VIDEO,
+      sourceType: Camera.PictureSourceType.CAMERA
     }).then((imageData) => {
       // imageData is a base64 encoded string
-      this.base64Image = "data:image/jpeg;base64," + imageData;
+      this.base64Image[dataElement.id] = "data:video/mp4;base64," + imageData;
     }, (err) => {
       console.log(err);
     });

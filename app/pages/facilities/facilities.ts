@@ -11,12 +11,14 @@ import { GoogleMap, GoogleMapsEvent,GoogleMapsLatLng,GoogleMapsMarkerOptions,Goo
 })
 export class FacilitiesPage {
 
-  map: GoogleMap;
-  constructor(private http:HttpClient,public events: Events) {
+  map:GoogleMap;
+
+  constructor(private http:HttpClient, public events:Events) {
     /**/
   }
-  ngAfterViewInit(){
-    let location = new GoogleMapsLatLng(-6.3690,34.8888);
+
+  ngAfterViewInit() {
+    let location = new GoogleMapsLatLng(-6.3690, 34.8888);
 
     this.map = new GoogleMap('map', {
       'backgroundColor': 'white',
@@ -50,24 +52,22 @@ export class FacilitiesPage {
       });
       this.http.get("organisationUnits.json?fields=*&filter=organisationUnitGroups.name:eq:Hospitals")
         .subscribe(data => {
-          alert("Here1");
           let organisationUnits = data.json().organisationUnits;
-          organisationUnits.forEach(organisationUnit =>{
-            if(organisationUnit.coordinates){
+          organisationUnits.forEach(organisationUnit => {
+            if (organisationUnit.coordinates) {
               let coords = eval(organisationUnit.coordinates);
-              let markerOptions: GoogleMapsMarkerOptions = {
-                position: new GoogleMapsLatLng(coords[0],coords[1]),
+              let markerOptions:GoogleMapsMarkerOptions = {
+                position: new GoogleMapsLatLng(coords[0], coords[1]),
                 title: organisationUnit.name
               };
               this.map.addMarker(markerOptions).then(
-                (marker: GoogleMapsMarker) => {
+                (marker:GoogleMapsMarker) => {
                   marker.showInfoWindow();
                 })
             }
-            alert("Here2");
-          },error => {
-            alert("ERROR:" + error);
           })
+        }, error => {
+
         });
     });
   }

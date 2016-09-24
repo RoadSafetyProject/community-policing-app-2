@@ -16,16 +16,17 @@
                    [(ngModel)]="dataValues[programStage.dataElement.id]"></ion-input>
       </ion-item>
       <ion-card *ngIf="programStage.dataElement.valueType == 'FILE_RESOURCE'">
+        {{base64Image[programStage.dataElement.id]}}
         <img *ngIf="base64Image[programStage.dataElement.id] && programStage.dataElement.name.indexOf('Image') > -1"
              [src]="base64Image[programStage.dataElement.id]"/>
         <img *ngIf="!base64Image[programStage.dataElement.id] && programStage.dataElement.name.indexOf('Image') > -1"
              src="build/img/home.png"/>
         <img *ngIf="base64Image[programStage.dataElement.id] && programStage.dataElement.name.indexOf('Video') > -1"
              [src]="base64Image[programStage.dataElement.id]"/>
-        <img *ngIf="!base64Image[programStage.dataElement.id] && programStage.dataElement.name.indexOf('Video') > -1"
-             src="build/img/home.png"/>
-        <video *ngIf="!base64Image[programStage.dataElement.id] && programStage.dataElement.name.indexOf('Video') > -1" controls='controls'>";
+
+        <video class="video" style="width:100%" *ngIf="!base64Image[programStage.dataElement.id] && programStage.dataElement.name.indexOf('Video') > -1" controls='controls'>";
           <source src='base64Image[programStage.dataElement.id]' type='video/mp4'>
+          <source src='base64Image[programStage.dataElement.id]' type='video/3gp'>
         </video>
         <ion-card-content>
           <button block *ngIf="programStage.dataElement.name.indexOf('Image') > -1"

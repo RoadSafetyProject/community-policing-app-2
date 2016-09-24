@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { NavController,MenuController,LoadingController,AlertController } from 'ionic-angular';
 import { HttpClient } from '../../services/httpclient';
 import { Observable }     from 'rxjs/Observable';
-import {Camera} from 'ionic-native';
+import {Camera, MediaCapture, CaptureVideoOptions,MediaFile,CaptureError} from 'ionic-native';
 
 @Component({
   templateUrl: 'build/pages/report/report.html',
@@ -15,15 +15,12 @@ export class ReportPage {
   public base64Image:any = {};
 
   constructor(private http:HttpClient,private loadingCtrl: LoadingController,public alertCtrl: AlertController) {
-    //alert("Herer");
     let loader = this.loadingCtrl.create({
       content: "Please wait..."
     });
     loader.present();
     this.http.get("programs.json?fields=id,name,programStages[programStageDataElements[:all,dataElement[id,name,valueType]]]&filter=name:eq:Community%20Police")
       .subscribe(data => {
-        //alert("SUCCESS");
-        console.log("IROADLOG SUCCESS:" + data.json());
         let programResults = data.json();
         this.initiateDataValues(programResults.programs[0].programStages[0].programStageDataElements);
         this.program = programResults.programs[0].id;
@@ -32,10 +29,7 @@ export class ReportPage {
           this.base64Image[programStage.dataElement.id]
         })*/
         loader.destroy();
-        //alert("SUCCESS FINISHED");
       },error =>{
-        //alert("ERROR:" + error);
-        console.log("IROADLOG SUCCESS:" + error);
         loader.destroy();
       });
     //.catch(this.handleError);
@@ -46,9 +40,7 @@ export class ReportPage {
     })
   }
   private takeShot(dataElement){
-    alert("IROADLOG:");
     if(dataElement.name.indexOf('Image') > -1){
-      alert("IROADLOG:1");
       this.takePicture(dataElement);
     }else{
       this.takeVideo(dataElement);
@@ -69,7 +61,16 @@ export class ReportPage {
     });
   }
   private takeVideo(dataElement) {
-    Camera.getPicture({
+    let options: CaptureVideoOptions = { limit: 1 };
+    MediaCapture.captureVideo(options)
+      .then(
+        (data) => {
+          // imageData is a base64 encoded string
+          this.base64Image[dataElement.id] = data[0].fullPath;
+        },
+        (err: CaptureError) => alert(err)
+      );
+    /*Camera.getPicture({
       mediaType: Camera.MediaType.VIDEO,
       sourceType: Camera.PictureSourceType.CAMERA
     }).then((imageData) => {
@@ -77,7 +78,7 @@ export class ReportPage {
       this.base64Image[dataElement.id] = "data:video/mp4;base64," + imageData;
     }, (err) => {
       console.log(err);
-    });
+    });*/
   }
 
   private onSubmit() {

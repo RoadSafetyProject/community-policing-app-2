@@ -12,6 +12,7 @@ export class SilentPage {
   map:GoogleMap;
   marker:GoogleMapsMarker;
   center:GoogleMapsLatLng;
+  speed = 0;
 
   static get parameters() {
     return [[LocationTracker]];
@@ -27,10 +28,12 @@ export class SilentPage {
       if (position.coords.speed) {
         if(position.coords.speed > 20){
           title += position.coords.speed;
+          this.speed = position.coords.speed;
           alert("Your Current Speed:" + position.coords.speed);
         }
       } else {
         title += "0";
+        this.speed = 0;
       }
       if (this.marker) {
         this.marker.setPosition(position.coords);

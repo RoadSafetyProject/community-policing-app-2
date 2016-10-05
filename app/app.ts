@@ -18,7 +18,7 @@ export class MyApp {
 
   rootPage: any = HomePage;
 
-  pages: Array<{title: string, component: any}>;
+  pages: Array<{title: string, component: any,icon:string}>;
 
   constructor(public platform: Platform,public events: Events) {
     platform.ready().then(() => {
@@ -28,10 +28,10 @@ export class MyApp {
     });
 
     this.pages = [
-      { title: 'Home', component: HomePage },
-      { title: 'Report', component: ReportPage},
-      { title: 'Facilities', component: FacilitiesPage },
-      { title: 'Silent', component: SilentPage}
+      { title: 'Home', component: HomePage,icon:"home"},
+      { title: 'Report', component: ReportPage,icon:"information-circle"},
+      { title: 'Facilities', component: FacilitiesPage,icon:"map"},
+      { title: 'Silent', component: SilentPage,icon:"mic-off"}
     ];
   }
   openPage(page) {

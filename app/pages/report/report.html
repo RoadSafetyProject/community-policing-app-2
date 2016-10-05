@@ -1,32 +1,41 @@
 <ion-header>
   <ion-navbar>
+    <button menuToggle>
+      <ion-icon ios="ios-menu" md="md-menu"></ion-icon>
+    </button>
     <ion-title>
-      <ion-icon menuToggle ios="ios-menu" md="md-menu"></ion-icon>
       Community Police Report
     </ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content>
-  <form (ngSubmit)="onSubmit()">
+  <form>
     <div *ngFor="let programStage of programStages;let i = index;">
       <ion-item *ngIf="programStage.dataElement.valueType == 'TEXT'">
         <ion-label floating>{{programStage.dataElement.name}}</ion-label>
         <ion-input type="text" name="{{programStage.dataElement.id}}"
                    [(ngModel)]="dataValues[programStage.dataElement.id]"></ion-input>
       </ion-item>
+      <!--<ion-item *ngIf="programStage.dataElement.optionSet">
+        <ion-label floating>{{programStage.dataElement.name}}</ion-label>
+        <ion-select [(ngModel)]="dataValues[programStage.dataElement.id]"  [ngModelOptions]="{standalone: true}">
+          <ion-option *ngFor="let option of programStage.dataElement.optionSet.options" [value]="option.name">{{option.name}}</ion-option>
+        </ion-select>-
+      </ion-item>-->
       <ion-card *ngIf="programStage.dataElement.valueType == 'FILE_RESOURCE'">
-        {{base64Image[programStage.dataElement.id]}}
-        <img *ngIf="base64Image[programStage.dataElement.id] && programStage.dataElement.name.indexOf('Image') > -1"
-             [src]="base64Image[programStage.dataElement.id]"/>
-        <img *ngIf="!base64Image[programStage.dataElement.id] && programStage.dataElement.name.indexOf('Image') > -1"
+        <img *ngIf="dataValues[programStage.dataElement.id] != '' && programStage.dataElement.name.indexOf('Image') > -1"
+             [src]="dataValues[programStage.dataElement.id]"/>
+        <img *ngIf="dataValues[programStage.dataElement.id] == '' && programStage.dataElement.name.indexOf('Image') > -1"
              src="build/img/home.png"/>
-        <img *ngIf="base64Image[programStage.dataElement.id] && programStage.dataElement.name.indexOf('Video') > -1"
-             [src]="base64Image[programStage.dataElement.id]"/>
 
-        <video class="video" style="width:100%" *ngIf="!base64Image[programStage.dataElement.id] && programStage.dataElement.name.indexOf('Video') > -1" controls='controls'>";
-          <source src='base64Image[programStage.dataElement.id]' type='video/mp4'>
-          <source src='base64Image[programStage.dataElement.id]' type='video/3gp'>
+        <video class="video" style="width:100%" *ngIf="dataValues[programStage.dataElement.id] == '' && programStage.dataElement.name.indexOf('Video') > -1" controls='controls'>";
+          <source src='{{dataValues[programStage.dataElement.id]}}' type='video/mp4'>
+          <source src='{{dataValues[programStage.dataElement.id]}}' type='video/3gp'>
+        </video>
+        <video class="video" style="width:100%" *ngIf="dataValues[programStage.dataElement.id] != '' && programStage.dataElement.name.indexOf('Video') > -1" controls='controls'>";
+          <source src='{{dataValues[programStage.dataElement.id]}}' type='video/mp4'>
+          <source src='{{dataValues[programStage.dataElement.id]}}' type='video/3gp'>
         </video>
         <ion-card-content>
           <button block *ngIf="programStage.dataElement.name.indexOf('Image') > -1"
@@ -36,7 +45,7 @@
         </ion-card-content>
       </ion-card>
     </div>
-    <button block>
+    <button block (click)="onSubmit()">
       <ion-icon></ion-icon>
       Report
     </button>

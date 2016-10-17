@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { NavController,MenuController,LoadingController,AlertController } from 'ionic-angular';
 import { HttpClient } from '../../services/httpclient';
 import { Observable }     from 'rxjs/Rx';
-import {File,Camera, MediaCapture, CaptureVideoOptions,MediaFile,CaptureError,Geolocation} from 'ionic-native';
+import {Transfer,Camera, MediaCapture, CaptureVideoOptions,MediaFile,CaptureError,Geolocation} from 'ionic-native';
 
 @Component({
   templateUrl: 'build/pages/report/report.html',
@@ -119,28 +119,40 @@ export class ReportPage {
               let filename = fullFilePath.replace(/^.*[\\\/]/, '');
               //alert(filename);
               //alert(fullFilePath.replace(filename, ''));
-              promises.push(this.uploadFile(fullFilePath));
+              promises.push(this.upload(fullFilePath).then(fileID =>{
+                alert("File Awesome");
+                event.dataValues.push({dataElement: programStageDataElement.dataElement.id, value: fileID});
+              }));
             }else{
               event.dataValues.push({dataElement: programStageDataElement.dataElement.id, value: this.dataValues[programStageDataElement.dataElement.id]});
             }
           }
         })
+        promises.push(Geolocation.getCurrentPosition().then(data => {
+          alert("Geo Awesome");
+          event.coordinate.latitude = data.coords.latitude;
+          event.coordinate.longitude = data.coords.longitude
+
+        },error => {
+          alert("Geo Error");
+          loader.destroy();
+        }));
         Promise.all(promises)
           .then(data => {
-            alert("Awesome");
+            this.http.post("events", event)
+              .subscribe(data => {
+                this.initiateDataValues(this.programStages);
+                loader.destroy();
+              },error => {
+                loader.destroy();
+              });
           },error => {
             alert("Promises Errors:" + error);
           });
         /*Geolocation.getCurrentPosition().then(data => {
           event.coordinate.latitude = data.coords.latitude;
           event.coordinate.longitude = data.coords.longitude
-          this.http.post("events", event)
-            .subscribe(data => {
-              this.initiateDataValues(this.programStages);
-              loader.destroy();
-            },error => {
-              loader.destroy();
-            });
+
         },error => {
           //alert("Here4");
           loader.destroy();
@@ -151,27 +163,30 @@ export class ReportPage {
         alert(error)
       });
   }
-  uploadFile(fullFilePath){
+  upload(fullFilePath: string){
     return new Promise((resolve, reject) => {
-      File.readAsText(fullFilePath).then((data) =>{
-        alert("File Read:");
-        let formData: FormData = new FormData();
-        formData.append("file",data);
-        this.http.post("fileResources", formData,{'Content-Type': undefined})
-          .subscribe(data => {
-            alert("Good:" + data.json());
-            //this.data.response = data._body;
-            resolve(42);
-          }, error => {
-            alert("Bad:" + error);
-            reject(error);
-            //console.log("Oooops!");
-          });
-      }, error => {
-        alert("File Error:" + error);
-        reject(error);
-      })
-    });
+      let ft = new Transfer();
+      let fileName = fullFilePath.replace(/^.*[\\\/]/, '');
+      let options = {
+        fileKey: 'file',
+        fileName: fileName,
+        mimeType: 'image/jpeg',
+        chunkedMode: false,
+        headers: {
+          'Content-Type' : undefined
+        },
+        params: {
+          fileName: fileName
+        }
+      };
 
+      ft.upload(fullFilePath, this.http.IROADURL + "fileResources", options, false)
+        .then((result: any) => {
+          alert(JSON.stringify(result))
+          resolve(result.response.fileResource.id);
+        }).catch((error: any) => {
+        reject(error);
+      });
+    });
   }
 }

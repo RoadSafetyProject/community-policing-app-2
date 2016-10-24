@@ -10,8 +10,13 @@
 </ion-header>
 
 <ion-content>
+  <ion-refresher (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      refreshingSpinner="circles">
+    </ion-refresher-content>
+  </ion-refresher>
   <form>
-    <div *ngFor="let programStage of programStages;let i = index;">
+    <div *ngFor="let programStage of programStageDataElements;let i = index;">
       <ion-item *ngIf="programStage.dataElement.valueType == 'TEXT'">
         <ion-label floating>{{programStage.dataElement.name}}</ion-label>
         <ion-input type="text" name="{{programStage.dataElement.id}}"

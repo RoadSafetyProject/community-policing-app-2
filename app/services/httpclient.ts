@@ -3,9 +3,9 @@ import {Http, Headers} from '@angular/http';
 
 @Injectable()
 export class HttpClient {
-  //private IROADURL = "http://roadsafety.go.tz/demo/api/";
-  public IROADURL = "http://192.168.42.98:8082/demo/api/";
-  //private IROADURL = "demo/api/";
+  public IROADURL = "http://roadsafety.go.tz/demo/api/";
+  //public IROADURL = "http://192.168.42.6:8082/demo/api/";
+  //public IROADURL = "demo/api/";
   constructor(private http: Http) {
     this.http = http;
   }

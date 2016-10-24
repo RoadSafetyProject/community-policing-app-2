@@ -26,9 +26,9 @@ export class SilentPage {
     this.tracker.startTracking().subscribe((position) => {
       var title = "Moving at a speed of ";
       if (position.coords.speed) {
+        this.speed = position.coords.speed;
         if(position.coords.speed > 20){
           title += position.coords.speed;
-          this.speed = position.coords.speed;
           alert("Your Current Speed:" + position.coords.speed);
         }
       } else {

@@ -12,13 +12,14 @@ import { GoogleMap, GoogleMapsEvent,GoogleMapsLatLng,GoogleMapsMarkerOptions,Goo
 export class FacilitiesPage {
 
   map:GoogleMap;
+  center:GoogleMapsLatLng;
 
   constructor(private http:HttpClient, public events:Events) {
     /**/
   }
 
   ngAfterViewInit() {
-    let location = new GoogleMapsLatLng(-6.3690, 34.8888);
+    this.center = new GoogleMapsLatLng(-6.3690, 34.8888);
 
     this.map = new GoogleMap('map', {
       'backgroundColor': 'white',
@@ -35,11 +36,13 @@ export class FacilitiesPage {
         'zoom': true
       },
       'camera': {
-        'latLng': location,
+        'latLng': this.center,
+        'tilt': 1,
         'zoom': 7,
         'bearing': 50
       }
     });
+
     this.map.on(GoogleMapsEvent.MAP_READY).subscribe(() => {
       this.events.subscribe('menu:opened', () => {
         // your action here
@@ -50,25 +53,29 @@ export class FacilitiesPage {
         // your action here
         this.map.setClickable(true);
       });
-      this.http.get("organisationUnits.json?fields=*&filter=organisationUnitGroups.name:eq:Hospitals")
-        .subscribe(data => {
-          let organisationUnits = data.json().organisationUnits;
-          organisationUnits.forEach(organisationUnit => {
-            if (organisationUnit.coordinates) {
-              let coords = eval(organisationUnit.coordinates);
-              let markerOptions:GoogleMapsMarkerOptions = {
-                position: new GoogleMapsLatLng(coords[0], coords[1]),
-                title: organisationUnit.name
-              };
-              this.map.addMarker(markerOptions).then(
-                (marker:GoogleMapsMarker) => {
-                  marker.showInfoWindow();
-                })
-            }
-          })
-        }, error => {
-
-        });
+      this.start();
+      console.log('Map is ready!');
     });
+  }
+  start(){
+    this.http.get("organisationUnits.json?fields=*&filter=organisationUnitGroups.name:eq:Hospitals")
+      .subscribe(data => {
+        let organisationUnits = data.json().organisationUnits;
+        organisationUnits.forEach(organisationUnit => {
+          if (organisationUnit.coordinates) {
+            let coords = eval(organisationUnit.coordinates);
+            let markerOptions:GoogleMapsMarkerOptions = {
+              position: new GoogleMapsLatLng(coords[0], coords[1]),
+              title: organisationUnit.name
+            };
+            this.map.addMarker(markerOptions).then(
+              (marker:GoogleMapsMarker) => {
+                marker.showInfoWindow();
+              })
+          }
+        })
+      }, error => {
+
+      });
   }
 }

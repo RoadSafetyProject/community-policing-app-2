@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController,MenuController,LoadingController,AlertController } from 'ionic-angular';
+import { NavController,MenuController,LoadingController,ToastController } from 'ionic-angular';
 import { HttpClient } from '../../services/httpclient';
 import { Observable }     from 'rxjs/Rx';
 import {Transfer,Camera, MediaCapture, CaptureVideoOptions,MediaFile,CaptureError,Geolocation} from 'ionic-native';
@@ -9,50 +9,55 @@ import {Transfer,Camera, MediaCapture, CaptureVideoOptions,MediaFile,CaptureErro
   providers: [HttpClient]
 })
 export class ReportPage {
-  public programStages:Array<any>;
-  public program:String;
-  public dataValues:any = {};
-
-  constructor(private http:HttpClient, private loadingCtrl:LoadingController, public alertCtrl:AlertController) {
-
-    //.catch(this.handleError);
-  }
-
-  ngAfterViewInit() {
-    let loader = this.loadingCtrl.create({
+  programStageDataElements = [];
+  program:String;
+  dataValues:any = {};
+  loader;
+  constructor(private http:HttpClient, private loadingCtrl:LoadingController, public toastCtrl: ToastController) {
+    this.loader = this.loadingCtrl.create({
       content: "Please wait..."
     });
-    loader.present();
-    /*Geolocation.getCurrentPosition().then(data => {
-      alert("Here1");
-      console.log(data);
-    },error => {
-      alert("Here4");
-      //loader.destroy();
-      //alert(error)
-    });*/
-    this.http.get("programs.json?fields=id,name,programStages[programStageDataElements[:all,dataElement[id,name,valueType,optionSet[:all,options[:all]]]]]&filter=name:eq:Community%20Police")
-      .subscribe(data => {
-        if (!this.program) {
-          let programResults = data.json();
-          this.initiateDataValues(programResults.programs[0].programStages[0].programStageDataElements);
-          this.program = programResults.programs[0].id;
-          this.programStages = programResults.programs[0].programStages[0].programStageDataElements;
-        } else {
-          alert(data);
-        }
-        /*this.programStages.forEach(function(programStage){
-         this.base64Image[programStage.dataElement.id]
-         })*/
-
-        loader.destroy();
-      }, error => {
-        loader.destroy();
-      });
   }
 
-  initiateDataValues(programStageDataElements) {
-    programStageDataElements.forEach(programStageDataElement => {
+  ngOnInit() {
+    this.loader.present();
+    this.loadData();
+  }
+  loadData(refresher?):any{
+    return this.http.get("programs.json?fields=id,name,programStages[programStageDataElements[:all,dataElement[id,name,valueType,optionSet[:all,options[:all]]]]]&filter=name:eq:Community%20Police")
+      .subscribe(data => {
+
+        if (!this.program) {
+          let programResults = data.json();
+          this.program = programResults.programs[0].id;
+          programResults.programs[0].programStages[0].programStageDataElements.forEach((programStageDataElement) =>{
+            this.programStageDataElements.push(programStageDataElement);
+          })
+          this.initiateDataValues();
+
+        }
+        if(refresher){
+          refresher.complete();
+        }
+        this.loader.dismiss();
+      }, error => {
+        if(refresher){
+          refresher.complete();
+        }
+        let toast = this.toastCtrl.create({
+          message: 'Error loading data please reload.',
+          duration: 3000
+        });
+        toast.present();
+
+        this.loader.dismiss();
+      });
+  }
+  doRefresh(refresher) {
+    this.loadData(refresher);
+  }
+  initiateDataValues() {
+    this.programStageDataElements.forEach(programStageDataElement => {
       this.dataValues[programStageDataElement.dataElement.id] = "";
     })
   }
@@ -66,6 +71,7 @@ export class ReportPage {
   }
 
   private takePicture(dataElement) {
+    //noinspection TypeScriptUnresolvedVariable
     Camera.getPicture({
       //destinationType: Camera.DestinationType.DATA_URL,
       destinationType: Camera.DestinationType.FILE_URI,
@@ -112,7 +118,7 @@ export class ReportPage {
           coordinate: {longitude: 0, latitude: 0}
         }
         let promises = [];
-        this.programStages.forEach(programStageDataElement => {
+        this.programStageDataElements.forEach(programStageDataElement => {
           if(this.dataValues[programStageDataElement.dataElement.id] != ""){
             if(programStageDataElement.dataElement.valueType == 'FILE_RESOURCE'){
               let fullFilePath = this.dataValues[programStageDataElement.dataElement.id];
@@ -120,7 +126,6 @@ export class ReportPage {
               //alert(filename);
               //alert(fullFilePath.replace(filename, ''));
               promises.push(this.upload(fullFilePath).then(fileID =>{
-                alert("File Awesome");
                 event.dataValues.push({dataElement: programStageDataElement.dataElement.id, value: fileID});
               }));
             }else{
@@ -129,37 +134,31 @@ export class ReportPage {
           }
         })
         promises.push(Geolocation.getCurrentPosition().then(data => {
-          alert("Geo Awesome");
           event.coordinate.latitude = data.coords.latitude;
           event.coordinate.longitude = data.coords.longitude
 
         },error => {
-          alert("Geo Error");
-          loader.destroy();
+          loader.dismiss();
         }));
         Promise.all(promises)
           .then(data => {
             this.http.post("events", event)
               .subscribe(data => {
-                this.initiateDataValues(this.programStages);
-                loader.destroy();
+                this.initiateDataValues();
+                let toast = this.toastCtrl.create({
+                  message: 'Report Sent Successfully.',
+                  duration: 3000
+                });
+                toast.present();
+                loader.dismiss();
               },error => {
-                loader.destroy();
+                loader.dismiss();
               });
           },error => {
-            alert("Promises Errors:" + error);
+            alert("Promises Errors:" + JSON.stringify(error));
           });
-        /*Geolocation.getCurrentPosition().then(data => {
-          event.coordinate.latitude = data.coords.latitude;
-          event.coordinate.longitude = data.coords.longitude
-
-        },error => {
-          //alert("Here4");
-          loader.destroy();
-          //alert(error)
-        });*/
       },error => {
-        loader.destroy();
+        loader.dismiss();
         alert(error)
       });
   }
@@ -182,8 +181,9 @@ export class ReportPage {
 
       ft.upload(fullFilePath, this.http.IROADURL + "fileResources", options, false)
         .then((result: any) => {
-          alert(JSON.stringify(result))
-          resolve(result.response.fileResource.id);
+          let resultJSON = JSON.parse(result.response);
+
+          resolve(resultJSON.response.fileResource.id);
         }).catch((error: any) => {
         reject(error);
       });

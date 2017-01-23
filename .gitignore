@@ -6,3 +6,7 @@ plugins/
 .idea
 npm-debug.log
 
+*,js
+*/*js
+*/*/*.js
+*/*/*/*.js

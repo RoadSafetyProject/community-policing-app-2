@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { HttpClient } from '../../services/httpclient';
-import {Events} from 'ionic-angular';
+import {Events,Platform} from 'ionic-angular';
 import { GoogleMap, GoogleMapsEvent,GoogleMapsLatLng,GoogleMapsMarkerOptions,GoogleMapsMarker } from 'ionic-native';
 
 //declare let L: any;
@@ -14,11 +14,18 @@ export class FacilitiesPage {
   map:GoogleMap;
   center:GoogleMapsLatLng;
 
-  constructor(private http:HttpClient, public events:Events) {
+  constructor(private http:HttpClient, public events:Events,public platform:Platform) {
     /**/
+    platform.ready().then(()=>{
+      this.loadMap();
+    });
   }
 
   ngAfterViewInit() {
+
+  }
+
+  loadMap(){
     this.center = new GoogleMapsLatLng(-6.3690, 34.8888);
 
     this.map = new GoogleMap('map', {
@@ -43,6 +50,7 @@ export class FacilitiesPage {
       }
     });
 
+
     this.map.on(GoogleMapsEvent.MAP_READY).subscribe(() => {
       this.events.subscribe('menu:opened', () => {
         // your action here
@@ -57,6 +65,7 @@ export class FacilitiesPage {
       console.log('Map is ready!');
     });
   }
+
   start(){
     this.http.get("organisationUnits.json?fields=*&filter=organisationUnitGroups.name:eq:Hospitals")
       .subscribe(data => {

@@ -65,7 +65,7 @@ export class SilentPage {
     this.start();
     this.center = new GoogleMapsLatLng(-6.3690, 34.8888);
 
-    this.map = new GoogleMap('map', {
+    this.map = new GoogleMap('map1', {
       'backgroundColor': 'white',
       'controls': {
         'compass': true,
@@ -97,7 +97,11 @@ export class SilentPage {
         // your action here
         this.map.setClickable(true);
       });
-      this.start();
+      try{
+        this.start();
+      }catch (e){
+        console.log(e);
+      }
       console.log('Map is ready!');
     });
   }

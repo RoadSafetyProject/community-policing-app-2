@@ -20,10 +20,13 @@ export class SilentPage {
 
   constructor(private tracker:LocationTracker,public events: Events) {
     /**/
+    this.tracker.startTracking();
   }
 
   start() {
-    this.tracker.startTracking().subscribe((position) => {
+    console.log("TRACK:Started tracking");
+    this.tracker.getWatcher().subscribe((position) => {
+      console.log(JSON.stringify(position));
       var title = "Moving at a speed of ";
       if (position.coords.speed) {
         this.speed = position.coords.speed;
@@ -59,6 +62,7 @@ export class SilentPage {
 
   ngAfterViewInit() {
 
+    this.start();
     this.center = new GoogleMapsLatLng(-6.3690, 34.8888);
 
     this.map = new GoogleMap('map', {

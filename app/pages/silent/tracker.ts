@@ -10,9 +10,9 @@ export class LocationTracker {
   position;
 
   constructor(public zone: NgZone) {
-    /*this.position = Observable.create(observer => {
+    this.position = Observable.create(observer => {
       this.positionObserver = observer;
-    });*/
+    });
 
   }
 
@@ -60,7 +60,7 @@ export class LocationTracker {
 
     BackgroundGeolocation.configure(config).then((location) => {
 
-      console.log('BackgroundGeolocation:  ' + location.latitude + ',' + location.longitude);
+      console.log('BackgroundGeolocation:  ' + JSON.stringify(location));
 
       // Run update inside of Angular's zone
       this.zone.run(() => {
@@ -86,6 +86,11 @@ export class LocationTracker {
     };
 
     this.watch = Geolocation.watchPosition(options);
+
+    this.watch.subscribe((data) => {
+      console.log('Location Change:  ' + JSON.stringify(location));
+      this.notifyLocation(data);
+    });
       /*.filter((p: any) => p.code === undefined)*/
       /*.subscribe((position: any) => {
 
@@ -99,7 +104,7 @@ export class LocationTracker {
       });
 
     });*/
-
+    return this.position;
   }
 
   stopTracking() {

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {LocationTracker} from '../silent/tracker';
-import {Events} from 'ionic-angular';
+import {Events,ToastController} from 'ionic-angular';
 import { GoogleMap, GoogleMapsEvent,GoogleMapsLatLng,GoogleMapsMarkerOptions, GoogleMapsMarker } from 'ionic-native';
 
 @Component({
@@ -18,15 +18,25 @@ export class SilentPage {
     return [[LocationTracker]];
   }
 
-  constructor(private tracker:LocationTracker,public events: Events) {
+  constructor(private tracker:LocationTracker,private toastCtrl: ToastController,public events: Events) {
     /**/
-    this.tracker.startTracking();
+    //this.tracker.startTracking();
   }
 
   start() {
     console.log("TRACK:Started tracking");
-    this.tracker.getWatcher().subscribe((position) => {
-      console.log(JSON.stringify(position));
+    this.tracker.startTracking().subscribe((position) => {
+      let toast = this.toastCtrl.create({
+        message: 'User was added successfully:' + JSON.stringify(position),
+        duration: 3000,
+        position: 'top'
+      });
+
+      toast.onDidDismiss(() => {
+        console.log('Dismissed toast');
+      });
+
+      toast.present();
       var title = "Moving at a speed of ";
       if (position.coords.speed) {
         this.speed = position.coords.speed;

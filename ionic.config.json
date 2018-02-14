@@ -1,11 +1,8 @@
 {
   "name": "community-policing",
   "app_id": "",
-  "v2": true,
-  "proxies": [
-    {
-      "path": "/demo",
-      "proxyUrl": "http://localhost:8082/demo/"
-    }
-  ]
+  "type": "ionic-angular",
+  "integrations": {
+    "cordova": {}
+  }
 }

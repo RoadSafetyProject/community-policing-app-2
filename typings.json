@@ -1,8 +1,0 @@
-{
-  "dependencies": {},
-  "devDependencies": {},
-  "globalDependencies": {
-    "es6-shim": "registry:dt/es6-shim#0.31.2+20160602141504",
-    "leaflet": "registry:dt/leaflet#0.7.3+20160330160843"
-  }
-}

@@ -14,6 +14,7 @@ import { Camera } from "@ionic-native/camera";
 import { FileTransfer } from "@ionic-native/file-transfer";
 import { File } from "@ionic-native/file";
 import { Geolocation } from "@ionic-native/geolocation";
+import { GoogleMaps } from "@ionic-native/google-maps";
 
 @NgModule({
   declarations: [MyApp, HomePage],
@@ -24,6 +25,7 @@ import { Geolocation } from "@ionic-native/geolocation";
     StatusBar,
     MediaCapture,
     Camera,
+    GoogleMaps,
     SplashScreen,
     FileTransfer,
     File,

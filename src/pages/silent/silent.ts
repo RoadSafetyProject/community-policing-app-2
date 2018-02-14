@@ -8,7 +8,7 @@ import {
   Marker
 } from "@ionic-native/google-maps";
 import { Component, OnInit } from "@angular/core/";
-import { IonicPage } from "ionic-angular";
+import { IonicPage, ToastController } from "ionic-angular";
 import { Geolocation } from "@ionic-native/geolocation";
 
 /**
@@ -25,9 +25,11 @@ import { Geolocation } from "@ionic-native/geolocation";
 })
 export class SilentPage implements OnInit {
   map: GoogleMap;
+  speed: number = 0;
   constructor(
     private googleMaps: GoogleMaps,
-    private geolocation: Geolocation
+    private geolocation: Geolocation,
+    private toastCtrl: ToastController
   ) {}
 
   ngOnInit() {
@@ -45,8 +47,8 @@ export class SilentPage implements OnInit {
         const mapOptions: GoogleMapOptions = {
           camera: {
             target: coordinate,
-            zoom: 7,
-            tilt: 1,
+            zoom: 13,
+            tilt: 0,
             bearing: 50
           },
           controls: {
@@ -73,9 +75,40 @@ export class SilentPage implements OnInit {
               position: coordinate
             })
             .then(marker => {
-              marker.on(GoogleMapsEvent.MARKER_CLICK).subscribe(() => {
-                console.log("marker has been clicked");
-              });
+              this.geolocation.watchPosition({ timeout: 2000 }).subscribe(
+                (position: any) => {
+                  let coordinate = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                  };
+                  if (position.coords.speed) {
+                    this.speed = position.coords.speed;
+                  } else {
+                    this.speed = 0;
+                  }
+                  var title = "Moving at a speed of ";
+                  if (position.coords.speed) {
+                    this.speed = position.coords.speed;
+                    if (position.coords.speed > 20) {
+                      title += position.coords.speed;
+                      let toast = this.toastCtrl.create({
+                        message: "Your Current Speed:" + position.coords.speed,
+                        showCloseButton: true
+                      });
+                      toast.present();
+                    }
+                  } else {
+                    title += "0";
+                    this.speed = 0;
+                  }
+                  marker.setPosition(position.coords);
+                  marker.setTitle(title);
+                },
+                error => {
+                  console.log(JSON.stringify(error));
+                  console.log("Fail to watch user position");
+                }
+              );
             });
         });
       })

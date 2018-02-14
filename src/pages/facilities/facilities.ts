@@ -127,7 +127,7 @@ export class FacilitiesPage implements OnInit {
   loadFireStations() {
     this.http
       .get(
-        "organisationUnits.json?fields=*&filter=organisationUnitGroups.name:eq:PoliceStations"
+        "organisationUnits.json?fields=*&filter=organisationUnitGroups.name:eq:FireStations"
       )
       .subscribe(
         data => {
